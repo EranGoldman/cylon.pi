@@ -24,6 +24,7 @@ timestamp() { date +"%F_%T_%Z"; }
 ###############################
 ###### The script itself ######
 ###############################
+timestamp=$(date +%Y%m%d%H%M)
 
 echo "$(timestamp) Installing dependecies ... "
 apt-get update
@@ -44,3 +45,38 @@ echo "Mounting the image for modifications... "
 PARTITIONS=($(kpartx -asv $imagefile | grep -o 'loop[0-9][0-9]*p[0-9]'))
 mount -o rw -t vfat /dev/mapper/${PARTITIONS[0]} $buildfolder/boot
 mount -o rw -t ext4 /dev/mapper/${PARTITIONS[1]} $buildfolder/root
+
+echo "Updating hosts and ssh files ... "
+sed -i "s/127.0.1.1.*/127.0.1.1 $hostname/" $installation_dir/root/etc/hosts
+touch $installation_dir/boot/ssh
+echo "$hostname" > $installation_dir/root/etc/hostname
+
+
+echo "Ijecting files to the image ... "
+cp image_files/first-boot.sh $installation_dir/boot/first-boot.sh
+touch $installation_dir/boot/first-boot.log
+
+echo_process "Closing up image file... "
+kpartx -u $imagefile
+sleep 2
+sync
+sleep 2
+umount $buildfolder/boot
+umount $buildfolder/root
+kpartx -dv $imagefile
+
+echo_process "Moving image and cleaning up... "
+shorthash=$(git log --pretty=format:'%h' -n 1)
+crc32checksum=$(crc32 $imagefile)
+destination="$hostname-$timestamp-git$shorthash-crc$crc32checksum.img"
+# read -n1 -r -p "Press space to continue..." key
+mv -v $imagefile "$destination"
+rm -rf $installation_dir
+
+echo_process "Compressing image... "
+xz --verbose --compress --keep "$destination"
+crc32checksum=$(crc32 "$destination.xz")
+mv "$destination.xz" "$hostname-$timestamp-git$shorthash-crc$crc32checksum.img.xz"
+
+echo_process "Finished! The results:"
+ls -alh "$hostname-$timestamp"*
