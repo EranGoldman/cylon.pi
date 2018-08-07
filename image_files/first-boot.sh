@@ -14,7 +14,11 @@ userpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9-_!@#$%^&*_+' | fold -w 6 | head -n
 ###############################
 
 timestamp() { date +"%F_%T_%Z"; }
-
+log_this() {
+  echo $(timestamp) >> /boot/first-boot.log
+  echo $1 >> /boot/first-boot.log
+  echo '\n' >> /boot/first-boot.log
+}
 ###############################
 ###### The script itself ######
 ###############################
@@ -24,7 +28,7 @@ exec &> >(tee -a "/boot/first-boot.log")
 
 ## Installation process after first-boot of the pi
 
-echo -n "$(timestamp) [openHABian] Changing default username and password... "
+echo -n "$(timestamp) [OwnPi] Changing default username and password... "
 if [ -z ${username+x} ] || ! id $userdef &>/dev/null || id "$username" &>/dev/null; then
   echo "SKIPPED"
 else
@@ -35,6 +39,8 @@ else
   echo "OK"
 fi
 
+log_this $userpw
+
 echo "=============================="
 echo
 echo -n "Your password is : "
@@ -43,7 +49,7 @@ echo
 echo "=============================="
 read -n1 -r -p "Press space to continue..." key
 
-echo -n "$(timestamp) [openHABian] Updating repositories and upgrading installed packages... "
+echo -n "$(timestamp) [OwnPi] Updating repositories and upgrading installed packages... "
 apt update &>/dev/null
 apt --yes upgrade &>/dev/null
 if [ $? -eq 0 ]; then

@@ -13,6 +13,7 @@ hostname="cylonpi"
 
 installation_dir="/tmp/ownpi"
 imagefile=$installation_dir/ownpi.img
+destinationfolder='.' # Without trailing slash
 
 ###############################
 ### Some helpfull functions ###
@@ -25,6 +26,11 @@ timestamp() { date +"%F_%T_%Z"; }
 ###### The script itself ######
 ###############################
 timestamp=$(date +%Y%m%d%H%M)
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
 
 echo "$(timestamp) Installing dependecies ... "
 apt-get update
@@ -53,6 +59,7 @@ echo "$hostname" > $installation_dir/root/etc/hostname
 
 
 echo "Ijecting files to the image ... "
+cp image_files/rc.local $installation_dir/root/etc/rc.local
 cp image_files/first-boot.sh $installation_dir/boot/first-boot.sh
 touch $installation_dir/boot/first-boot.log
 
@@ -68,15 +75,15 @@ kpartx -dv $imagefile
 echo "Moving image and cleaning up... "
 shorthash=$(git log --pretty=format:'%h' -n 1)
 crc32checksum=$(crc32 $imagefile)
-destination="$hostname-$timestamp-git$shorthash-crc$crc32checksum.img"
+destination="$destinationfolder/$hostname-$timestamp-git$shorthash-crc$crc32checksum.img"
 # read -n1 -r -p "Press space to continue..." key
 mv -v $imagefile "$destination"
 rm -rf $installation_dir
 
-echo "Compressing image... "
-xz --verbose --compress --keep "$destination"
-crc32checksum=$(crc32 "$destination.xz")
-mv "$destination.xz" "$hostname-$timestamp-git$shorthash-crc$crc32checksum.img.xz"
+# echo "Compressing image... "
+# xz --verbose --compress --keep "$destination"
+# crc32checksum=$(crc32 "$destination.xz")
+# mv "$destination.xz" "$hostname-$timestamp-git$shorthash-crc$crc32checksum.img.xz"
 
 echo "Finished! The results:"
 ls -alh "$hostname-$timestamp"*

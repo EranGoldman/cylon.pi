@@ -1,0 +1,29 @@
+#!/bin/sh -e
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+
+FLAG="/opt/afterfirstboot.lock"
+FIRSTBOOT="/boot/first-boot.sh"
+
+# Only executed after first boot
+if [ ! -f "$FLAG" ]; then
+  echo "[OwnPI] Flag file 'afterfirstboot.lock' not found, continuing with '$FIRSTBOOT' script."
+  if [ ! -f "$FIRSTBOOT" ]; then "[OwnPI] 'first-boot.sh' not found, Exiting."; exit 0; fi
+  if (/bin/bash "$FIRSTBOOT"); then
+    echo "[OwnPI] Finishing up... "
+    echo "[OwnPI] Created after first boot script succeeded (see /etc/rc.local). Do not delete." > "$FLAG"
+  else
+    echo "[OwnPI] Script '$FIRSTBOOT' failed."
+  fi
+fi
+
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+fi
+
+exit 0
+
+# vim: filetype=sh
