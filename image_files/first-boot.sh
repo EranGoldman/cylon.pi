@@ -6,7 +6,7 @@
 
 hostname=cylonpi
 username=cylon
-userpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9-_!@#$%^&*_+' | fold -w 12 | head -n 1)
+userpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9-_!@#$%^&*_+' | fold -w 6 | head -n 1)
 
 
 ###############################
@@ -34,6 +34,14 @@ else
   chpasswd <<< "$username:$userpw"
   echo "OK"
 fi
+
+echo "=============================="
+echo
+echo -n "Your password is : "
+echo $userpw
+echo
+echo "=============================="
+read -n1 -r -p "Press space to continue..." key
 
 echo -n "$(timestamp) [openHABian] Updating repositories and upgrading installed packages... "
 apt update &>/dev/null
