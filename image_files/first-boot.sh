@@ -6,7 +6,7 @@
 
 hostname=cylonpi
 username=cylon
-userpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9-_!@#$%^&*_+' | fold -w 6 | head -n 1)
+userpw=$(date +%N|sed s/...$//)
 
 
 ###############################
@@ -14,11 +14,11 @@ userpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9-_!@#$%^&*_+' | fold -w 6 | head -n
 ###############################
 
 timestamp() { date +"%F_%T_%Z"; }
-log_this() {
-  echo $(timestamp) >> /boot/first-boot.log
-  echo $1 >> /boot/first-boot.log
-  echo '\n' >> /boot/first-boot.log
-}
+# log_this() {
+#   echo $(timestamp) >> /boot/first-boot.log
+#   echo $1 >> /boot/first-boot.log
+#   echo '\n' >> /boot/first-boot.log
+# }
 ###############################
 ###### The script itself ######
 ###############################
@@ -39,7 +39,7 @@ else
   echo "OK"
 fi
 
-log_this $userpw
+# log_this $userpw
 
 echo "=============================="
 echo
@@ -49,14 +49,16 @@ echo
 echo "=============================="
 read -n1 -r -p "Press space to continue..." key
 
-echo -n "$(timestamp) [OwnPi] Updating repositories and upgrading installed packages... "
-apt update &>/dev/null
-apt --yes upgrade &>/dev/null
-if [ $? -eq 0 ]; then
-  echo "OK";
-else
-  dpkg --configure -a
-  apt update &>/dev/null
-  apt --yes upgrade &>/dev/null
-  if [ $? -eq 0 ]; then echo "OK"; else echo "FAILED"; fail_inprogress; fi
-fi
+# echo -n "$(timestamp) [OwnPi] Updating repositories and upgrading installed packages... "
+# apt update &>/dev/null
+# apt --yes upgrade &>/dev/null
+# if [ $? -eq 0 ]; then
+#   echo "OK";
+# else
+#   dpkg --configure -a
+#   apt update &>/dev/null
+#   apt --yes upgrade &>/dev/null
+#   if [ $? -eq 0 ]; then echo "OK"; else echo "FAILED"; fail_inprogress; fi
+# fi
+
+touch /opt/afterfirstboot.lock

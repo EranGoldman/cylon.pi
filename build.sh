@@ -32,10 +32,6 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-echo "$(timestamp) Installing dependecies ... "
-apt-get update
-apt-get --yes install git wget curl unzip kpartx libarchive-zip-perl dos2unix
-
 echo "Creating folders  ... "
 mkdir -p $installation_dir
 mkdir -p $installation_dir/boot $installation_dir/root
