@@ -30,7 +30,8 @@ exec &> >(tee -a "/boot/first-boot.log")
 
 # Installing cylon.js
 echo -n "[OwnPi] Installing nodejs : "
-apt-get install -y nodejs npm build-essential >/dev/null
+apt-get update > /dev/null
+apt-get install -y git nodejs npm build-essential >/dev/null
 ln /usr/bin/nodejs /usr/bin/node
 echo "OK"
 #
