@@ -11,6 +11,7 @@ FIRSTBOOT="/boot/first-boot.sh"
 if [ ! -f "$FLAG" ]; then
   echo "[OwnPI] Flag file 'afterfirstboot.lock' not found, continuing with '$FIRSTBOOT' script."
   if [ ! -f "$FIRSTBOOT" ]; then "[OwnPI] 'first-boot.sh' not found, Exiting."; exit 0; fi
+  sleep 60
   if (/bin/bash "$FIRSTBOOT"); then
     echo "[OwnPI] Finishing up... "
     echo "[OwnPI] Created after first boot script succeeded (see /etc/rc.local). Do not delete." > "$FLAG"

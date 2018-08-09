@@ -26,20 +26,29 @@ timestamp() { date +"%F_%T_%Z"; }
 # Log everything to file
 exec &> >(tee -a "/boot/first-boot.log")
 
-## Installation process after first-boot of the pi
+# Installation process after first-boot of the pi
 
+# Installing cylon.js
+echo -n "[OwnPi] Installing nodejs : "
+apt-get install -y nodejs npm build-essential >/dev/null
+ln /usr/bin/nodejs /usr/bin/node
+echo "OK"
+#
+echo -n "[OwnPi] Cloning cylon.js : "
+git clone https://github.com/hybridgroup/cylon.git /home/$username
+echo "OK"
+
+# Updateing user name and password
 echo -n "$(timestamp) [OwnPi] Changing default username and password... "
-if [ -z ${username+x} ] || ! id $userdef &>/dev/null || id "$username" &>/dev/null; then
+if [ -z ${username+x} ] || ! id $usergroup &>/dev/null || id "$username" &>/dev/null; then
   echo "SKIPPED"
 else
-  usermod -l "$username" $userdef
+  usermod -l "$username" pi
   usermod -m -d "/home/$username" "$username"
-  groupmod -n "$username" $userdef
+  groupmod -n "$username" pi
   chpasswd <<< "$username:$userpw"
   echo "OK"
 fi
-
-# log_this $userpw
 
 echo "=============================="
 echo
@@ -47,18 +56,5 @@ echo -n "Your password is : "
 echo $userpw
 echo
 echo "=============================="
-read -n1 -r -p "Press space to continue..." key
-
-# echo -n "$(timestamp) [OwnPi] Updating repositories and upgrading installed packages... "
-# apt update &>/dev/null
-# apt --yes upgrade &>/dev/null
-# if [ $? -eq 0 ]; then
-#   echo "OK";
-# else
-#   dpkg --configure -a
-#   apt update &>/dev/null
-#   apt --yes upgrade &>/dev/null
-#   if [ $? -eq 0 ]; then echo "OK"; else echo "FAILED"; fail_inprogress; fi
-# fi
 
 touch /opt/afterfirstboot.lock
